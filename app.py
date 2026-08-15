@@ -217,6 +217,8 @@ def api_products():
     return jsonify([dict(p) for p in products])
 
 
+init_db()
+
+
 if __name__ == "__main__":
-    init_db()
     app.run(debug=True)
