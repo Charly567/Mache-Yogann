@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ht">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Mache Yogann{% endblock %}</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css') }}">
+{% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<header>
+  <nav class="navbar">
+    <a href="{{ url_for('home') }}" class="logo">
+      <svg class="basket-icon" viewBox="0 0 40 40" aria-hidden="true">
+        <path d="M8 15 L13 7 L27 7 L32 15 Z" fill="var(--primary)"/>
+        <path d="M6 15 L34 15 L31 31 Q30 33 28 33 L12 33 Q10 33 9 31 Z" fill="var(--primary)"/>
+        <path d="M8 19 L32 19 M9.5 24 L30.5 24" stroke="#fff" stroke-width="1.4" opacity="0.55"/>
+      </svg>
+      <span>Mache <em>Yogann</em></span>
+    </a>
+
+    <div class="navsearch">
+      <input type="text" placeholder="Kisa w ap chèche?">
+      <button class="search-btn" aria-label="Chèche">🔍</button>
+    </div>
+
+    <div class="navlinks">
+      <a href="{{ url_for('home') }}" class="{{ 'active' if request.endpoint == 'home' else '' }}">Akèy</a>
+      <a href="{{ url_for('home') }}#pwodwi">Kategori</a>
+      <a href="{{ url_for('vandè') }}">Vann sou Mache Yogann</a>
+    </div>
+
+    <div class="navactions">
+      <a href="#" class="cart-icon" aria-label="Panye acha">🛒<span class="cart-count">0</span></a>
+      {% if session.get('vendor_id') %}
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline btn-sm">Kont mwen</a>
+        <a href="{{ url_for('logout') }}" class="btn btn-primary btn-sm">Dekonekte</a>
+      {% else %}
+        <a href="{{ url_for('login') }}" class="btn btn-outline btn-sm">Konekte</a>
+        <a href="{{ url_for('vandè') }}#enskri" class="btn btn-primary btn-sm">Enskri</a>
+      {% endif %}
+    </div>
+  </nav>
+</header>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-wrap">
+      {% for category, message in messages %}
+        <div class="flash flash-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+{% block content %}{% endblock %}
+
+<footer class="site-footer">
+  <div class="footer-bottom">© 2026 Mache Yogann — Fèt ak fyète pou Leyogàn.</div>
+</footer>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

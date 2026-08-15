@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Mache Yogann — Mache Kominotè Leyogàn{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="hero-inner">
+    <span class="eyebrow">Byenveni sou</span>
+    <h1>Mache <em>Yogann</em></h1>
+    <p class="slogan">Achte fasil. Vann fasil.</p>
+    <p class="hero-sub">Yon nouvo fason pou achte ak vann pwodwi nan kominote Leyogàn nou an.</p>
+    <div class="hero-ctas">
+      <a href="#pwodwi" class="btn btn-primary">🛍️ Kòmanse achte</a>
+      <a href="{{ url_for('vandè') }}" class="btn btn-outline">🏪 Mwen vle vann</a>
+    </div>
+    <div class="hero-stats">
+      <div><strong>100%</strong><span>Vandè lokal</span></div>
+      <div><strong>5–10%</strong><span>Sèl frè sèvis</span></div>
+      <div><strong>MonCash</strong><span>&amp; NatCash</span></div>
+    </div>
+  </div>
+  <div class="hero-art">
+    <svg viewBox="0 0 380 340" aria-hidden="true">
+      <circle cx="230" cy="170" r="150" fill="#ffffff" opacity="0.5"/>
+      <rect x="130" y="30" width="130" height="270" rx="26" fill="#1a1a1a"/>
+      <rect x="138" y="52" width="114" height="205" rx="4" fill="#FFF4E8"/>
+      <path d="M138 52 Q195 20 252 52" fill="none" stroke="var(--primary)" stroke-width="10" stroke-linecap="round"/>
+      <path d="M138 52 L145 40 Q195 14 245 40 L252 52" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity="0.7"/>
+      <circle cx="195" cy="150" r="34" fill="var(--primary)"/>
+      <circle cx="184" cy="150" r="12" fill="none" stroke="#fff" stroke-width="4"/>
+      <path d="M178 145 L188 156 L212 132" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" opacity="0"/>
+      <path d="M180 160 h30 l6 18 h-42 z" fill="#fff" opacity="0.9"/>
+      <circle cx="70" cy="230" r="10" fill="none" stroke="var(--ink)" stroke-width="4"/>
+      <circle cx="105" cy="230" r="10" fill="none" stroke="var(--ink)" stroke-width="4"/>
+      <path d="M55 175 h60 l-10 55 h-40 z" fill="var(--primary)" opacity="0.85"/>
+      <path d="M60 175 q0 -22 20 -22 q20 0 20 22" fill="none" stroke="var(--primary)" stroke-width="6"/>
+      <rect x="290" y="195" width="60" height="70" rx="6" fill="var(--ink)" opacity="0.85"/>
+      <path d="M300 195 q10 -18 20 -18 q10 0 20 18" fill="none" stroke="var(--ink)" stroke-width="6" opacity="0.85"/>
+      <rect x="18" y="255" width="55" height="60" rx="6" fill="#E8DCCB"/>
+      <rect x="255" y="240" width="45" height="50" rx="5" fill="#E8DCCB"/>
+      <circle cx="55" cy="120" r="16" fill="var(--success)" opacity="0.25"/>
+      <rect x="46" y="132" width="18" height="26" fill="var(--success)" opacity="0.4"/>
+    </svg>
+  </div>
+</section>
+
+<section id="pwodwi" class="categories">
+  {% for cat in [
+    {'icon':'🍎','name':'Manje','sub':'Pwodwi fre','key':'Manje'},
+    {'icon':'👕','name':'Rad','sub':'Rad & akseswa','key':'Rad'},
+    {'icon':'🏠','name':'Kay','sub':'Pwodwi pou kay','key':'Kay'},
+    {'icon':'🥤','name':'Bwason','sub':'Bwason natirèl','key':'Bwason'},
+    {'icon':'🧺','name':'Atizana','sub':'Fèt alamen','key':'Atizana'},
+    {'icon':'✨','name':'Tout','sub':'Wè tout pwodwi','key':'Tout'}
+  ] %}
+    <button class="cat-card chip {{ 'active' if loop.last else '' }}" data-cat="{{ cat.key }}">
+      <span class="cat-icon">{{ cat.icon }}</span>
+      <span><strong>{{ cat.name }}</strong><span>{{ cat.sub }}</span></span>
+    </button>
+  {% endfor %}
+</section>
+
+<main class="market">
+  <div class="market-head">
+    <h2>Sa moun ap achte 🔥</h2>
+    <span class="market-count">{{ products|length }} pwodwi</span>
+  </div>
+
+  {% if products|length == 0 %}
+    <p class="empty-state">Poko gen pwodwi poste. <a href="{{ url_for('vandè') }}">Vin premye vandè a!</a></p>
+  {% else %}
+    <div class="grid">
+      {% for p in products %}
+      <article class="card" data-category="{{ p['category'] }}">
+        <div class="card-img">
+          {% if p['badge'] %}
+            <span class="card-badge badge-{{ p['badge_class'] }}">{{ p['badge'] }}</span>
+          {% endif %}
+          <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <rect width="200" height="200" fill="var(--peach)"/>
+            <circle cx="100" cy="88" r="42" fill="var(--primary)" opacity="0.85"/>
+            <text x="100" y="98" text-anchor="middle" font-family="Poppins, sans-serif" font-size="28" font-weight="700" fill="#fff">{{ p['title'][:2]|upper }}</text>
+          </svg>
+        </div>
+        <div class="card-body">
+          <span class="card-vendor">{{ p['category'] }}</span>
+          <h3 class="card-title">{{ p['title'] }}</h3>
+          <div class="card-rating">
+            <span class="stars">{{ '★' * (p['rating']|round|int) }}{{ '☆' * (5 - (p['rating']|round|int)) }}</span>
+            <span>({{ p['review_count'] }})</span>
+          </div>
+          <div class="card-foot">
+            <span class="card-price">
+              {% if p['original_price'] %}<span class="card-price-old">{{ "%.0f"|format(p['original_price']) }}</span>{% endif %}
+              {{ "%.0f"|format(p['price']) }} HTG
+            </span>
+            <button class="card-buy" aria-label="Achte">+</button>
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+</main>
+
+<section class="how">
+  <h2>Kijan l fonksyone</h2>
+  <div class="how-grid">
+    <div class="how-card"><div class="how-icon">📦</div><h3>Vandè a poste</h3><p>Yon vandè Leyogàn poste yon pwodwi ak foto, pri ak kantite.</p></div>
+    <div class="how-card"><div class="how-icon">💳</div><h3>Klyan an peye</h3><p>Ou peye an sekirite pa MonCash oswa NatCash.</p></div>
+    <div class="how-card"><div class="how-icon">✅</div><h3>Nou verifye</h3><p>Nou konfime peman an epi peye vandè a otomatikman.</p></div>
+    <div class="how-card"><div class="how-icon">🛵</div><h3>Nou livre</h3><p>Nou al chèche machandiz la epi n al livre l lakay ou.</p></div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('.chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    const cat = chip.dataset.cat;
+    document.querySelectorAll('.card').forEach(card => {
+      card.style.display = (cat === 'Tout' || card.dataset.category === cat) ? '' : 'none';
+    });
+  });
+});
+document.querySelectorAll('.card-buy').forEach(btn => {
+  btn.addEventListener('click', () => alert('Etap swivan an ap konekte peman MonCash/NatCash.'));
+});
+</script>
+{% endblock %}

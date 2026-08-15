@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Kont Mwen — Mache Yogann{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <h1>Byenveni, {{ session.get('vendor_name') }}</h1>
+  <p>Poste pwodwi ou yo isit la, epi yo ap parèt otomatikman sou paj prensipal la.</p>
+</section>
+
+<section class="form-section">
+  <div class="form-card">
+    <h2>Poste yon nouvo pwodwi</h2>
+    <form method="POST" action="{{ url_for('poste_pwodwi') }}">
+      <label>Non pwodwi a
+        <input type="text" name="title" required placeholder="Ex: Panye Mango">
+      </label>
+      <label>Pri (HTG)
+        <input type="number" name="price" required min="0" step="1" placeholder="250">
+      </label>
+      <label>Kategori
+        <select name="category" required>
+          <option value="Manje">Manje &amp; Pwodwi Fre</option>
+          <option value="Rad">Rad &amp; Akseswa</option>
+          <option value="Kay">Meb &amp; Kay</option>
+          <option value="Bwason">Bwason</option>
+          <option value="Atizana">Atizana</option>
+        </select>
+      </label>
+      <button type="submit" class="btn btn-primary btn-block">Poste pwodwi a</button>
+    </form>
+  </div>
+</section>
+
+<section class="market" style="padding-top:0;">
+  <div class="market-head">
+    <h2>Pwodwi ou yo ({{ products|length }})</h2>
+  </div>
+  {% if products|length == 0 %}
+    <p class="empty-state">Ou poko poste okenn pwodwi.</p>
+  {% else %}
+    <div class="grid">
+      {% for p in products %}
+      <article class="card">
+        <div class="card-img">
+          <svg viewBox="0 0 200 200"><rect width="200" height="200" fill="var(--sea)" opacity="0.14"/></svg>
+        </div>
+        <div class="card-body">
+          <span class="card-vendor">{{ p['category'] }}</span>
+          <h3 class="card-title">{{ p['title'] }}</h3>
+          <div class="card-foot">
+            <span class="card-price">{{ "%.0f"|format(p['price']) }} HTG</span>
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,51 @@
+.page-hero{
+  padding:60px 40px 40px;max-width:720px;
+}
+.page-hero h1{font-size:clamp(1.9rem,3.6vw,2.6rem);color:var(--sea-dark);margin:0 0 14px;line-height:1.15;}
+.page-hero p{font-size:1.02rem;color:#4a453d;line-height:1.5;}
+
+.form-section, .auth-wrap{display:flex;justify-content:center;padding:0 40px 60px;}
+.auth-wrap{padding-top:70px;}
+
+.form-card{
+  background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+  padding:34px 32px;max-width:460px;width:100%;box-shadow:0 8px 30px rgba(11,79,108,0.08);
+}
+.form-card h2{color:var(--sea-dark);margin:0 0 18px;font-size:1.4rem;}
+
+#vendor-form label, #login-form label{
+  display:flex;flex-direction:column;gap:6px;font-size:0.85rem;font-weight:600;
+  color:var(--charcoal);margin-bottom:16px;
+}
+#vendor-form input, #login-form input{
+  padding:11px 14px;border-radius:8px;border:1.5px solid var(--line);
+  font-family:inherit;font-size:0.95rem;font-weight:400;
+}
+#vendor-form input:focus, #login-form input:focus{outline:2px solid var(--sea);border-color:var(--sea);}
+
+.checkbox-row{flex-direction:row !important;align-items:flex-start;gap:10px !important;font-weight:400 !important;font-size:0.85rem;}
+.checkbox-row input{width:auto;margin-top:2px;}
+.checkbox-row a{color:var(--sea);font-weight:600;}
+
+.btn-block{width:100%;margin-top:6px;}
+.form-note{font-size:0.8rem;color:#6b655b;margin-top:14px;text-align:center;}
+
+.terms-section{background:var(--sand);padding:60px 40px;}
+.terms-section h2{text-align:center;color:var(--sea-dark);margin:0 0 34px;}
+.terms-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;max-width:900px;margin:0 auto;}
+.terms-card{background:#fff;border-radius:var(--radius);padding:22px 24px;border:1px solid var(--line);}
+.terms-card h3{margin:0 0 8px;color:var(--sea);font-size:1rem;}
+.terms-card p{margin:0;font-size:0.9rem;line-height:1.5;color:#4a453d;}
+
+@media (max-width:700px){
+  .terms-grid{grid-template-columns:1fr;}
+}
+
+.flash-wrap{padding:14px 40px 0;}
+.flash{
+  padding:12px 18px;border-radius:10px;font-size:0.9rem;font-weight:600;margin-bottom:10px;
+}
+.flash-success{background:rgba(46,139,87,0.14);color:var(--leaf);border:1px solid rgba(46,139,87,0.3);}
+.flash-error{background:rgba(230,57,70,0.12);color:var(--hibiscus);border:1px solid rgba(230,57,70,0.3);}
+.empty-state{padding:40px;text-align:center;color:#6b655b;font-size:0.95rem;}
+.empty-state a{color:var(--sea);font-weight:700;}

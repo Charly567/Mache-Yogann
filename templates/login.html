@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Konekte — Mache Yogann{% endblock %}
+
+{% block content %}
+<section class="auth-wrap">
+  <div class="form-card auth-card">
+    <h2>Byenveni ankò</h2>
+    <p class="form-note">Konekte pou jere pwodwi w yo.</p>
+    <form method="POST" action="{{ url_for('login') }}">
+      <label>Imèl
+        <input type="email" name="email" required placeholder="ou@egzanp.com">
+      </label>
+      <label>Modpas
+        <input type="password" name="password" required placeholder="••••••••">
+      </label>
+      <button type="submit" class="btn btn-primary btn-block">Konekte</button>
+    </form>
+    <p class="form-note">Poko gen kont? <a href="{{ url_for('vandè') }}#enskri">Kreye youn</a></p>
+  </div>
+</section>
+{% endblock %}

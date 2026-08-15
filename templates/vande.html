@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Vin Vandè — Mache Yogann{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <span class="eyebrow">Pou vandè Leyogàn yo</span>
+  <h1>Poste, vann, epi nou okipe livrezon an.</h1>
+  <p>Kreye yon kont vandè gratis, poste pwodwi ou yo, epi resevwa lajan ou chak fwa Mache Yogann konfime yon vant.</p>
+</section>
+
+<section id="enskri" class="form-section">
+  <div class="form-card">
+    <h2>Kreye kont vandè</h2>
+    <form method="POST" action="{{ url_for('vandè') }}">
+      <label>Non konplè
+        <input type="text" name="fullname" required placeholder="Ex: Jak Pierre">
+      </label>
+      <label>Non biznis / stann (si genyen)
+        <input type="text" name="business" placeholder="Ex: Atelye Rosemond">
+      </label>
+      <label>Nimewo telefòn (WhatsApp)
+        <input type="tel" name="phone" required placeholder="+509 3xxx xxxx">
+      </label>
+      <label>Imèl
+        <input type="email" name="email" required placeholder="ou@egzanp.com">
+      </label>
+      <label>Kote w ye Leyogàn
+        <input type="text" name="location" required placeholder="Ex: Bergeau, Ti Rivyè...">
+      </label>
+      <label>Modpas
+        <input type="password" name="password" required minlength="6" placeholder="Omwen 6 karaktè">
+      </label>
+      <label class="checkbox-row">
+        <input type="checkbox" required>
+        <span>Mwen li epi mwen aksepte <a href="#kondisyon">kondisyon sèvis</a> yo.</span>
+      </label>
+      <button type="submit" class="btn btn-primary btn-block">Kreye kont mwen</button>
+    </form>
+  </div>
+</section>
+
+<section id="kondisyon" class="terms-section">
+  <h2>Kondisyon sèvis pou vandè</h2>
+  <div class="terms-grid">
+    <div class="terms-card">
+      <h3>1. Frè sèvis</h3>
+      <p>Mache Yogann pran yon komisyon <strong>ant 5% ak 10%</strong> sou chak vant ki fèt sou platfòm nan.</p>
+    </div>
+    <div class="terms-card">
+      <h3>2. Peman</h3>
+      <p>Klyan an peye dirèkteman sou kont MonCash/NatCash Mache Yogann. Apre konfimasyon, nou peye vandè a.</p>
+    </div>
+    <div class="terms-card">
+      <h3>3. Livrezon</h3>
+      <p>Yon ajan Mache Yogann vin resevwa machandiz la nan men vandè a apre vant lan konfime.</p>
+    </div>
+    <div class="terms-card">
+      <h3>4. Egzatitid pwodwi</h3>
+      <p>Vandè a responsab pou deskripsyon pwodwi a kòrèk ak ajou.</p>
+    </div>
+  </div>
+</section>
+{% endblock %}
