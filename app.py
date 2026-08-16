@@ -15,13 +15,23 @@ Epi ale sou http://127.0.0.1:5000
 
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 import sqlite3
 import os
+import uuid
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "chanje-kle-sa-a-pou-pwodiksyon")
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "mache_yogann.db")
+
+UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "static", "img", "pwodwi")
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 # ---------------------------------------------------------
@@ -51,8 +61,11 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             vendor_id INTEGER NOT NULL,
             title TEXT NOT NULL,
+            description TEXT,
             price REAL NOT NULL,
             original_price REAL,
+            quantity INTEGER DEFAULT 1,
+            free_shipping INTEGER DEFAULT 0,
             category TEXT NOT NULL,
             image_path TEXT,
             rating REAL DEFAULT 4.5,
@@ -76,15 +89,15 @@ def init_db():
         )
         demo_id = conn.execute("SELECT id FROM vendors WHERE email = ?", ("demo@macheyogann.com",)).fetchone()["id"]
         demo_products = [
-            ("Panye Mango Fransik", 250, None, "Manje", 4.8, 12, "Nouvo", "new"),
-            ("Chemiz Kolonn Broder", 900, 1100, "Rad", 4.5, 8, "-20%", "discount"),
-            ("Chodyè Fè 3 Litr", 1450, None, "Kay", 4.6, 15, "Popilè", "popular"),
-            ("Jus Kowosòl Natirèl", 300, None, "Bwason", 4.9, 9, "Top", "top"),
-            ("Panyen Twal Tise", 600, None, "Atizana", 4.4, 7, None, None),
-            ("Sandal Kwi Alamen", 750, 880, "Rad", 4.7, 11, "-15%", "discount"),
+            ("Panye Mango Fransik", "Mango fransik byen mi, keyi jodi a nan jaden lokal.", 250, None, 20, 1, "Manje", 4.8, 12, "Nouvo", "new"),
+            ("Chemiz Kolonn Broder", "Chemiz kolonn tradisyonèl, bwode alamen.", 900, 1100, 8, 0, "Rad", 4.5, 8, "-20%", "discount"),
+            ("Chodyè Fè 3 Litr", "Chodyè fè solid, bon pou tout kwit manje.", 1450, None, 5, 0, "Kay", 4.6, 15, "Popilè", "popular"),
+            ("Jus Kowosòl Natirèl", "Jus kowosòl fre, san sik ajoute.", 300, None, 30, 1, "Bwason", 4.9, 9, "Top", "top"),
+            ("Panyen Twal Tise", "Panyen tise alamen ak twal kolore.", 600, None, 12, 0, "Atizana", 4.4, 7, None, None),
+            ("Sandal Kwi Alamen", "Sandal kwi natirèl, fèt pa atizan Leyogàn.", 750, 880, 10, 1, "Rad", 4.7, 11, "-15%", "discount"),
         ]
         conn.executemany(
-            "INSERT INTO products (vendor_id, title, price, original_price, category, rating, review_count, badge, badge_class) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO products (vendor_id, title, description, price, original_price, quantity, free_shipping, category, rating, review_count, badge, badge_class) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             [(demo_id, *p) for p in demo_products],
         )
         conn.commit()
@@ -184,13 +197,31 @@ def poste_pwodwi():
         return redirect(url_for("login"))
 
     title = request.form.get("title", "").strip()
+    description = request.form.get("description", "").strip()
     price = request.form.get("price", "0")
+    quantity = request.form.get("quantity", "1")
+    free_shipping = 1 if request.form.get("free_shipping") == "on" else 0
     category = request.form.get("category", "Manje")
+
+    if not title:
+        flash("Tanpri antre non pwodwi a.", "error")
+        return redirect(url_for("dashboard"))
+
+    # Jere foto a (si vandè a chwazi younn)
+    image_path = None
+    photo = request.files.get("photo")
+    if photo and photo.filename and allowed_file(photo.filename):
+        ext = photo.filename.rsplit(".", 1)[1].lower()
+        unique_name = f"{uuid.uuid4().hex}.{ext}"
+        photo.save(os.path.join(UPLOAD_FOLDER, secure_filename(unique_name)))
+        image_path = f"img/pwodwi/{unique_name}"
 
     conn = get_db()
     conn.execute(
-        "INSERT INTO products (vendor_id, title, price, category) VALUES (?, ?, ?, ?)",
-        (session["vendor_id"], title, float(price), category),
+        """INSERT INTO products
+           (vendor_id, title, description, price, quantity, free_shipping, category, image_path)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+        (session["vendor_id"], title, description, float(price), int(quantity), free_shipping, category, image_path),
     )
     conn.commit()
     conn.close()
@@ -217,6 +248,9 @@ def api_products():
     return jsonify([dict(p) for p in products])
 
 
+# Kreye tab yo (si yo poko egziste) chak fwa modil sa a chaje —
+# sa asire baz done a pare kit ou lanse "python app.py" lokalman,
+# kit sèvè pwodiksyon an (gunicorn) chaje aplikasyon an.
 init_db()
 
 
