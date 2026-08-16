@@ -199,6 +199,7 @@ def poste_pwodwi():
     title = request.form.get("title", "").strip()
     description = request.form.get("description", "").strip()
     price = request.form.get("price", "0")
+    original_price = request.form.get("original_price", "").strip()
     quantity = request.form.get("quantity", "1")
     free_shipping = 1 if request.form.get("free_shipping") == "on" else 0
     category = request.form.get("category", "Manje")
@@ -219,14 +220,82 @@ def poste_pwodwi():
     conn = get_db()
     conn.execute(
         """INSERT INTO products
-           (vendor_id, title, description, price, quantity, free_shipping, category, image_path)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
-        (session["vendor_id"], title, description, float(price), int(quantity), free_shipping, category, image_path),
+           (vendor_id, title, description, price, original_price, quantity, free_shipping, category, image_path)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        (session["vendor_id"], title, description, float(price),
+         float(original_price) if original_price else None,
+         int(quantity), free_shipping, category, image_path),
     )
     conn.commit()
     conn.close()
 
     flash("Pwodwi a poste avèk siksè!", "success")
+    return redirect(url_for("dashboard"))
+
+
+@app.route("/dashboard/modifye/<int:product_id>", methods=["GET", "POST"])
+def modifye_pwodwi(product_id):
+    if "vendor_id" not in session:
+        return redirect(url_for("login"))
+
+    conn = get_db()
+    product = conn.execute(
+        "SELECT * FROM products WHERE id = ? AND vendor_id = ?",
+        (product_id, session["vendor_id"]),
+    ).fetchone()
+
+    if not product:
+        conn.close()
+        flash("Pwodwi sa a pa disponib.", "error")
+        return redirect(url_for("dashboard"))
+
+    if request.method == "POST":
+        title = request.form.get("title", "").strip()
+        description = request.form.get("description", "").strip()
+        price = request.form.get("price", "0")
+        original_price = request.form.get("original_price", "").strip()
+        quantity = request.form.get("quantity", "1")
+        free_shipping = 1 if request.form.get("free_shipping") == "on" else 0
+        category = request.form.get("category", "Manje")
+
+        image_path = product["image_path"]
+        photo = request.files.get("photo")
+        if photo and photo.filename and allowed_file(photo.filename):
+            ext = photo.filename.rsplit(".", 1)[1].lower()
+            unique_name = f"{uuid.uuid4().hex}.{ext}"
+            photo.save(os.path.join(UPLOAD_FOLDER, secure_filename(unique_name)))
+            image_path = f"img/pwodwi/{unique_name}"
+
+        conn.execute(
+            """UPDATE products SET title=?, description=?, price=?, original_price=?,
+               quantity=?, free_shipping=?, category=?, image_path=? WHERE id=?""",
+            (title, description, float(price),
+             float(original_price) if original_price else None,
+             int(quantity), free_shipping, category, image_path, product_id),
+        )
+        conn.commit()
+        conn.close()
+        flash("Pwodwi a mete ajou!", "success")
+        return redirect(url_for("dashboard"))
+
+    conn.close()
+    return render_template("modifye.html", product=product)
+
+
+@app.route("/dashboard/siprime/<int:product_id>", methods=["POST"])
+def siprime_pwodwi(product_id):
+    if "vendor_id" not in session:
+        return redirect(url_for("login"))
+
+    conn = get_db()
+    conn.execute(
+        "DELETE FROM products WHERE id = ? AND vendor_id = ?",
+        (product_id, session["vendor_id"]),
+    )
+    conn.commit()
+    conn.close()
+
+    flash("Pwodwi a siprime.", "success")
     return redirect(url_for("dashboard"))
 
 

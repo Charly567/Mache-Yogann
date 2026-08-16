@@ -26,12 +26,17 @@
 
       <div class="field-row">
         <label>Pri (HTG)
-          <input type="number" name="price" required min="0" step="1" placeholder="250">
+          <input type="number" name="price" required min="0" step="1" placeholder="500">
         </label>
-        <label>Kantite disponib
-          <input type="number" name="quantity" required min="0" step="1" value="1">
+        <label>Ansyen pri (si gen rediksyon)
+          <input type="number" name="original_price" min="0" step="1" placeholder="Ex: 550">
         </label>
       </div>
+      <p class="field-hint">Ex: si w te vann 550 gd epi kounye a li 500 gd, mete 550 nan "Ansyen pri" ak 500 nan "Pri" — sit la ap montre 550 bare ak 500 kòm nouvo pri. Kite l vid si pa gen rediksyon.</p>
+
+      <label>Kantite disponib
+        <input type="number" name="quantity" required min="0" step="1" value="1">
+      </label>
 
       <label>Kategori
         <select name="category" required>
@@ -76,7 +81,16 @@
           <h3 class="card-title">{{ p['title'] }}</h3>
           {% if p['description'] %}<p class="card-desc">{{ p['description'] }}</p>{% endif %}
           <div class="card-foot">
-            <span class="card-price">{{ "%.0f"|format(p['price']) }} HTG</span>
+            <span class="card-price">
+              {% if p['original_price'] %}<span class="card-price-old">{{ "%.0f"|format(p['original_price']) }}</span>{% endif %}
+              {{ "%.0f"|format(p['price']) }} HTG
+            </span>
+          </div>
+          <div class="card-actions">
+            <a href="{{ url_for('modifye_pwodwi', product_id=p['id']) }}" class="btn btn-outline btn-sm">Modifye</a>
+            <form method="POST" action="{{ url_for('siprime_pwodwi', product_id=p['id']) }}" onsubmit="return confirm('Ou sèten ou vle siprime pwodwi sa a?');">
+              <button type="submit" class="btn btn-outline btn-sm btn-danger">Siprime</button>
+            </form>
           </div>
         </div>
       </article>

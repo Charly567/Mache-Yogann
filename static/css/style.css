@@ -189,6 +189,12 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;}
   font-family:inherit;font-size:0.85rem;background:#fff;
 }
 
+.card-actions{display:flex;gap:8px;padding:0 16px 14px;}
+.card-actions form{flex:1;margin:0;}
+.card-actions .btn{width:100%;padding:8px 10px;font-size:0.78rem;}
+.btn-danger{color:var(--danger);border-color:var(--danger);}
+.btn-danger:hover{background:var(--danger);color:#fff;}
+
 @media (max-width:900px){
   .navsearch{display:none;}
   .navlinks{display:none;}

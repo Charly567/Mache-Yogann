@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Modifye Pwodwi — Mache Yogann{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <h1>Modifye "{{ product['title'] }}"</h1>
+  <p>Chanje detay pwodwi a, epi ajoute yon nouvo foto si w vle.</p>
+</section>
+
+<section class="form-section">
+  <div class="form-card">
+    <form method="POST" action="{{ url_for('modifye_pwodwi', product_id=product['id']) }}" enctype="multipart/form-data">
+      <label>Non pwodwi a
+        <input type="text" name="title" required value="{{ product['title'] }}">
+      </label>
+
+      {% if product['image_path'] %}
+        <p class="field-hint">Foto aktyèl la:</p>
+        <img src="{{ url_for('static', filename=product['image_path']) }}" alt="" style="width:100px;height:100px;object-fit:cover;border-radius:8px;margin-bottom:14px;">
+      {% endif %}
+      <label>Chanje foto pwodwi a (si w vle)
+        <input type="file" name="photo" accept="image/png, image/jpeg, image/webp">
+      </label>
+
+      <label>Deskripsyon
+        <textarea name="description" rows="3">{{ product['description'] or '' }}</textarea>
+      </label>
+
+      <div class="field-row">
+        <label>Pri kounye a (HTG)
+          <input type="number" name="price" required min="0" step="1" value="{{ product['price']|int }}">
+        </label>
+        <label>Ansyen pri (si gen rediksyon)
+          <input type="number" name="original_price" min="0" step="1" placeholder="Ex: 550" value="{{ product['original_price']|int if product['original_price'] else '' }}">
+        </label>
+      </div>
+      <p class="field-hint">Ex: si w te vann 550 gd epi kounye a li 500 gd, mete 550 nan "Ansyen pri" ak 500 nan "Pri kounye a" — sit la ap montre 550 bare ak 500 kòm nouvo pri.</p>
+
+      <label>Kantite disponib
+        <input type="number" name="quantity" required min="0" step="1" value="{{ product['quantity'] }}">
+      </label>
+
+      <label>Kategori
+        <select name="category" required>
+          <option value="Manje" {{ 'selected' if product['category']=='Manje' }}>Manje &amp; Pwodwi Fre</option>
+          <option value="Rad" {{ 'selected' if product['category']=='Rad' }}>Rad &amp; Akseswa</option>
+          <option value="Kay" {{ 'selected' if product['category']=='Kay' }}>Meb &amp; Kay</option>
+          <option value="Bwason" {{ 'selected' if product['category']=='Bwason' }}>Bwason</option>
+          <option value="Atizana" {{ 'selected' if product['category']=='Atizana' }}>Atizana</option>
+        </select>
+      </label>
+
+      <label class="checkbox-row">
+        <input type="checkbox" name="free_shipping" {{ 'checked' if product['free_shipping'] }}>
+        <span>Livrezon gratis pou pwodwi sa a</span>
+      </label>
+
+      <button type="submit" class="btn btn-primary btn-block">Anrejistre chanjman yo</button>
+      <a href="{{ url_for('dashboard') }}" class="btn btn-outline btn-block" style="margin-top:10px;">Anile</a>
+    </form>
+  </div>
+</section>
+{% endblock %}
