@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Achte {{ product['title'] }} — Mache Yogann{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <h1>Achte "{{ product['title'] }}"</h1>
+  <p>Ranpli enfòmasyon ou yo, epi n ap montre w kijan pou w peye.</p>
+</section>
+
+<section class="form-section">
+  <div class="form-card">
+    <h2>{{ product['title'] }} — {{ "%.0f"|format(product['price']) }} HTG</h2>
+    <p class="field-hint">Vandè: {{ product['vendor_business'] or product['vendor_name'] }}</p>
+
+    <form method="POST" action="{{ url_for('achte_pwodwi', product_id=product['id']) }}">
+      <label>Non ou
+        <input type="text" name="buyer_name" required placeholder="Ex: Marie Joseph">
+      </label>
+      <label>Nimewo telefòn ou
+        <input type="tel" name="buyer_phone" required placeholder="+509 3xxx xxxx">
+      </label>
+      <label>Adrès livrezon
+        <input type="text" name="buyer_address" placeholder="Ex: Bergeau, Ti Rivyè, Leyogàn">
+      </label>
+      <label>Kantite
+        <input type="number" name="quantity" value="1" min="1" max="{{ product['quantity'] }}" required>
+      </label>
+      <label>Mwayen peman
+        <select name="payment_method" required>
+          <option value="MonCash">MonCash</option>
+          <option value="NatCash">NatCash</option>
+        </select>
+      </label>
+      <button type="submit" class="btn btn-primary btn-block">Kontinye pou peye</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

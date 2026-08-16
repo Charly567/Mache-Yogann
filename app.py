@@ -25,6 +25,11 @@ app.secret_key = os.environ.get("SECRET_KEY", "chanje-kle-sa-a-pou-pwodiksyon")
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "mache_yogann.db")
 
+# Nimewo pou resevwa peman — klyan yo voye lajan sou nimewo sa yo,
+# epi ekip Mache Yogann konfime tranzaksyon an manyèlman.
+MONCASH_NUMBER = os.environ.get("MONCASH_NUMBER", "4770-3814")
+NATCASH_NUMBER = os.environ.get("NATCASH_NUMBER", "3510-0438")
+
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "static", "img", "pwodwi")
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -73,6 +78,23 @@ def init_db():
             badge TEXT,
             badge_class TEXT,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(vendor_id) REFERENCES vendors(id)
+        );
+
+        CREATE TABLE IF NOT EXISTS orders (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            product_id INTEGER NOT NULL,
+            vendor_id INTEGER NOT NULL,
+            buyer_name TEXT NOT NULL,
+            buyer_phone TEXT NOT NULL,
+            buyer_address TEXT,
+            quantity INTEGER DEFAULT 1,
+            total_price REAL NOT NULL,
+            payment_method TEXT NOT NULL,
+            transaction_ref TEXT,
+            status TEXT DEFAULT 'an_tann',
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(product_id) REFERENCES products(id),
             FOREIGN KEY(vendor_id) REFERENCES vendors(id)
         );
     """)
@@ -304,6 +326,119 @@ def logout():
     session.clear()
     flash("Ou dekonekte.", "success")
     return redirect(url_for("home"))
+
+
+# ---------------------------------------------------------
+# Achte yon pwodwi (kòmand + peman manyèl)
+# ---------------------------------------------------------
+@app.route("/pwodwi/<int:product_id>/achte", methods=["GET", "POST"])
+def achte_pwodwi(product_id):
+    conn = get_db()
+    product = conn.execute(
+        "SELECT products.*, vendors.business AS vendor_business, vendors.fullname AS vendor_name "
+        "FROM products JOIN vendors ON products.vendor_id = vendors.id WHERE products.id = ?",
+        (product_id,),
+    ).fetchone()
+
+    if not product:
+        conn.close()
+        flash("Pwodwi sa a pa disponib ankò.", "error")
+        return redirect(url_for("home"))
+
+    if request.method == "POST":
+        buyer_name = request.form.get("buyer_name", "").strip()
+        buyer_phone = request.form.get("buyer_phone", "").strip()
+        buyer_address = request.form.get("buyer_address", "").strip()
+        quantity = int(request.form.get("quantity", "1") or 1)
+        payment_method = request.form.get("payment_method", "MonCash")
+
+        if not (buyer_name and buyer_phone):
+            flash("Tanpri antre non ak nimewo telefòn ou.", "error")
+            conn.close()
+            return redirect(url_for("achte_pwodwi", product_id=product_id))
+
+        total_price = product["price"] * quantity
+
+        cur = conn.execute(
+            """INSERT INTO orders
+               (product_id, vendor_id, buyer_name, buyer_phone, buyer_address, quantity, total_price, payment_method)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+            (product_id, product["vendor_id"], buyer_name, buyer_phone, buyer_address,
+             quantity, total_price, payment_method),
+        )
+        conn.commit()
+        order_id = cur.lastrowid
+        conn.close()
+        return redirect(url_for("konfime_peman", order_id=order_id))
+
+    conn.close()
+    return render_template("achte.html", product=product)
+
+
+@app.route("/kòmand/<int:order_id>/peman", methods=["GET", "POST"])
+def konfime_peman(order_id):
+    conn = get_db()
+    order = conn.execute(
+        "SELECT orders.*, products.title AS product_title FROM orders "
+        "JOIN products ON orders.product_id = products.id WHERE orders.id = ?",
+        (order_id,),
+    ).fetchone()
+
+    if not order:
+        conn.close()
+        flash("Kòmand sa a pa jwenn.", "error")
+        return redirect(url_for("home"))
+
+    if request.method == "POST":
+        transaction_ref = request.form.get("transaction_ref", "").strip()
+        conn.execute(
+            "UPDATE orders SET transaction_ref = ? WHERE id = ?",
+            (transaction_ref, order_id),
+        )
+        conn.commit()
+        conn.close()
+        flash("Mèsi! Nou resevwa referans tranzaksyon an, n ap verifye l talè.", "success")
+        return redirect(url_for("home"))
+
+    conn.close()
+    return render_template(
+        "peman.html", order=order,
+        moncash_number=MONCASH_NUMBER, natcash_number=NATCASH_NUMBER,
+    )
+
+
+@app.route("/dashboard/kòmand")
+def dashboard_kòmand():
+    if "vendor_id" not in session:
+        flash("Tanpri konekte anvan.", "error")
+        return redirect(url_for("login"))
+
+    conn = get_db()
+    orders = conn.execute(
+        "SELECT orders.*, products.title AS product_title FROM orders "
+        "JOIN products ON orders.product_id = products.id "
+        "WHERE orders.vendor_id = ? ORDER BY orders.created_at DESC",
+        (session["vendor_id"],),
+    ).fetchall()
+    conn.close()
+    return render_template("kòmand.html", orders=orders)
+
+
+@app.route("/dashboard/kòmand/<int:order_id>/konfime", methods=["POST"])
+def konfime_kòmand(order_id):
+    if "vendor_id" not in session:
+        return redirect(url_for("login"))
+
+    conn = get_db()
+    conn.execute(
+        "UPDATE orders SET status = 'konfime' WHERE id = ? AND vendor_id = ?",
+        (order_id, session["vendor_id"]),
+    )
+    conn.commit()
+    conn.close()
+
+    flash("Kòmand lan konfime!", "success")
+    return redirect(url_for("dashboard_kòmand"))
 
 
 # ---------------------------------------------------------

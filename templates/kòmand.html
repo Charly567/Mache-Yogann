@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Kòmand yo — Mache Yogann{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <h1>Kòmand yo</h1>
+  <p>Kòmand klyan yo pase pou pwodwi ou yo — verifye peman an sou pwòp telefòn ou anvan w konfime.</p>
+</section>
+
+<section class="market" style="padding-top:0;">
+  {% if orders|length == 0 %}
+    <p class="empty-state">Poko gen okenn kòmand.</p>
+  {% else %}
+    {% for o in orders %}
+    <div class="form-card" style="max-width:none;margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+        <div>
+          <h3 style="margin:0 0 6px;">{{ o['product_title'] }} × {{ o['quantity'] }}</h3>
+          <p class="field-hint" style="margin:0;">
+            Klyan: {{ o['buyer_name'] }} — {{ o['buyer_phone'] }}<br>
+            {% if o['buyer_address'] %}Adrès: {{ o['buyer_address'] }}<br>{% endif %}
+            Mwayen: {{ o['payment_method'] }}
+            {% if o['transaction_ref'] %} — Referans: <strong>{{ o['transaction_ref'] }}</strong>{% else %} — <em>Klyan poko antre referans lan</em>{% endif %}
+          </p>
+        </div>
+        <div style="text-align:right;">
+          <span class="card-price" style="display:block;margin-bottom:8px;">{{ "%.0f"|format(o['total_price']) }} HTG</span>
+          {% if o['status'] == 'konfime' %}
+            <span class="card-badge badge-new" style="position:static;">Konfime</span>
+          {% else %}
+            <form method="POST" action="{{ url_for('konfime_kòmand', order_id=o['id']) }}">
+              <button type="submit" class="btn btn-primary btn-sm">Konfime peman resevwa</button>
+            </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  {% endif %}
+</section>
+{% endblock %}

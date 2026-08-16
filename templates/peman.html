@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Peman — Mache Yogann{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <h1>Peye pou "{{ order['product_title'] }}"</h1>
+  <p>Swiv etap yo anba a pou konfime acha ou a.</p>
+</section>
+
+<section class="form-section">
+  <div class="form-card">
+    <h2>Total: {{ "%.0f"|format(order['total_price']) }} HTG</h2>
+
+    {% if order['payment_method'] == 'MonCash' %}
+      <p class="field-hint" style="font-size:0.95rem;color:var(--ink);">
+        1. Ouvri app <strong>MonCash</strong> ou.<br>
+        2. Voye <strong>{{ "%.0f"|format(order['total_price']) }} HTG</strong> sou nimewo:
+        <strong>{{ moncash_number }}</strong><br>
+        3. MonCash ap ba ou yon <strong>kòd referans/konfimasyon</strong> — antre l anba a.
+      </p>
+    {% else %}
+      <p class="field-hint" style="font-size:0.95rem;color:var(--ink);">
+        1. Ouvri app <strong>NatCash</strong> ou.<br>
+        2. Voye <strong>{{ "%.0f"|format(order['total_price']) }} HTG</strong> sou nimewo:
+        <strong>{{ natcash_number }}</strong><br>
+        3. NatCash ap ba ou yon <strong>kòd referans/konfimasyon</strong> — antre l anba a.
+      </p>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('konfime_peman', order_id=order['id']) }}">
+      <label>Kòd referans/konfimasyon tranzaksyon an
+        <input type="text" name="transaction_ref" required placeholder="Ex: TX123456">
+      </label>
+      <button type="submit" class="btn btn-primary btn-block">Konfime peman an voye</button>
+    </form>
+    <p class="field-hint">Apre nou verifye peman an nan men nou, n ap konfime kòmand ou a epi kontakte w pou livrezon.</p>
+  </div>
+</section>
+{% endblock %}

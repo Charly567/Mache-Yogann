@@ -37,6 +37,7 @@
       <a href="#" class="cart-icon" aria-label="Panye acha">🛒<span class="cart-count">0</span></a>
       {% if session.get('vendor_id') %}
         <a href="{{ url_for('dashboard') }}" class="btn btn-outline btn-sm">Kont mwen</a>
+        <a href="{{ url_for('dashboard_kòmand') }}" class="btn btn-outline btn-sm">Kòmand</a>
         <a href="{{ url_for('logout') }}" class="btn btn-primary btn-sm">Dekonekte</a>
       {% else %}
         <a href="{{ url_for('login') }}" class="btn btn-outline btn-sm">Konekte</a>

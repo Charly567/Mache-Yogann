@@ -100,7 +100,7 @@
               {% if p['original_price'] %}<span class="card-price-old">{{ "%.0f"|format(p['original_price']) }}</span>{% endif %}
               {{ "%.0f"|format(p['price']) }} HTG
             </span>
-            <button class="card-buy" aria-label="Achte">+</button>
+            <a href="{{ url_for('achte_pwodwi', product_id=p['id']) }}" class="card-buy" aria-label="Achte">+</a>
           </div>
         </div>
       </article>
@@ -131,9 +131,6 @@ document.querySelectorAll('.chip').forEach(chip => {
       card.style.display = (cat === 'Tout' || card.dataset.category === cat) ? '' : 'none';
     });
   });
-});
-document.querySelectorAll('.card-buy').forEach(btn => {
-  btn.addEventListener('click', () => alert('Etap swivan an ap konekte peman MonCash/NatCash.'));
 });
 </script>
 {% endblock %}
