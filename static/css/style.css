@@ -94,7 +94,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;}
 .hero-stats strong{font-family:var(--font-display);font-size:1.25rem;color:var(--ink);font-weight:700;}
 .hero-stats span{font-size:0.78rem;color:var(--gray);}
 
-.hero-art{position:relative;z-index:1;flex-shrink:0;width:440px;}
+.hero-art{position:relative;z-index:1;flex-shrink:0;width:600px;}
 .hero-img{width:100%;height:auto;border-radius:20px;display:block;}
 
 /* ---- Categories ---- */
