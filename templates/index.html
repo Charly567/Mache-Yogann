@@ -25,11 +25,12 @@
 
 <section id="pwodwi" class="categories">
   {% for cat in [
-    {'icon':'🍎','name':'Manje','sub':'Pwodwi fre','key':'Manje'},
-    {'icon':'👕','name':'Rad','sub':'Rad & akseswa','key':'Rad'},
-    {'icon':'🏠','name':'Kay','sub':'Pwodwi pou kay','key':'Kay'},
-    {'icon':'🥤','name':'Bwason','sub':'Bwason natirèl','key':'Bwason'},
-    {'icon':'🧺','name':'Atizana','sub':'Fèt alamen','key':'Atizana'},
+    {'icon':'🛒','name':'Makèt','sub':'Pwovizyon & grenn','key':'Maket'},
+    {'icon':'👗','name':'Fason','sub':'Rad & akseswa','key':'Fason'},
+    {'icon':'📱','name':'Teknoloji','sub':'Telefòn & gadjèt','key':'Teknoloji'},
+    {'icon':'🧴','name':'Bote','sub':'Pafen & swen','key':'Bote'},
+    {'icon':'🏠','name':'Kay','sub':'Dekorasyon & zouti','key':'Kay'},
+    {'icon':'🔥','name':'Pwomosyon','sub':'Bòn afè & rabè','key':'Pwomosyon'},
     {'icon':'✨','name':'Tout','sub':'Wè tout pwodwi','key':'Tout'}
   ] %}
     <button class="cat-card chip {{ 'active' if loop.last else '' }}" data-cat="{{ cat.key }}">

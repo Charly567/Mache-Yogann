@@ -111,12 +111,12 @@ def init_db():
         )
         demo_id = conn.execute("SELECT id FROM vendors WHERE email = ?", ("demo@macheyogann.com",)).fetchone()["id"]
         demo_products = [
-            ("Panye Mango Fransik", "Mango fransik byen mi, keyi jodi a nan jaden lokal.", 250, None, 20, 1, "Manje", 4.8, 12, "Nouvo", "new"),
-            ("Chemiz Kolonn Broder", "Chemiz kolonn tradisyonèl, bwode alamen.", 900, 1100, 8, 0, "Rad", 4.5, 8, "-20%", "discount"),
+            ("Diri Konplè 5 Liv", "Diri Ayisyen konplè, sache 5 liv.", 250, None, 20, 1, "Maket", 4.8, 12, "Nouvo", "new"),
+            ("Chemiz Kolonn Broder", "Chemiz kolonn tradisyonèl, bwode alamen.", 900, 1100, 8, 0, "Fason", 4.5, 8, "-20%", "discount"),
             ("Chodyè Fè 3 Litr", "Chodyè fè solid, bon pou tout kwit manje.", 1450, None, 5, 0, "Kay", 4.6, 15, "Popilè", "popular"),
-            ("Jus Kowosòl Natirèl", "Jus kowosòl fre, san sik ajoute.", 300, None, 30, 1, "Bwason", 4.9, 9, "Top", "top"),
-            ("Panyen Twal Tise", "Panyen tise alamen ak twal kolore.", 600, None, 12, 0, "Atizana", 4.4, 7, None, None),
-            ("Sandal Kwi Alamen", "Sandal kwi natirèl, fèt pa atizan Leyogàn.", 750, 880, 10, 1, "Rad", 4.7, 11, "-15%", "discount"),
+            ("Chajè Telefòn Rapid", "Chajè USB-C rapid, konpatib ak pifò telefòn.", 300, None, 30, 1, "Teknoloji", 4.9, 9, "Top", "top"),
+            ("Pafen Fanm 50ml", "Pafen dous, dire tout jounen.", 600, None, 12, 0, "Bote", 4.4, 7, None, None),
+            ("Sandal Kwi Alamen", "Sandal kwi natirèl, fèt pa atizan Leyogàn.", 750, 880, 10, 1, "Pwomosyon", 4.7, 11, "-15%", "discount"),
         ]
         conn.executemany(
             "INSERT INTO products (vendor_id, title, description, price, original_price, quantity, free_shipping, category, rating, review_count, badge, badge_class) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
