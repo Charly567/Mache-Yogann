@@ -13,17 +13,39 @@ Pou lanse l lokalman:
 Epi ale sou http://127.0.0.1:5000
 """
 
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash, abort
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 import sqlite3
 import os
 import uuid
+import secrets
 from datetime import datetime, timedelta
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "chanje-kle-sa-a-pou-pwodiksyon")
 app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # 5 MB max pou telechajman
+
+
+def get_csrf_token():
+    """Kreye (yon sèl fwa pa sesyon) epi retounen yon jeton pou pwoteje fòm yo."""
+    if "csrf_token" not in session:
+        session["csrf_token"] = secrets.token_hex(16)
+    return session["csrf_token"]
+
+
+app.jinja_env.globals["csrf_token"] = get_csrf_token
+
+
+@app.before_request
+def verify_csrf():
+    """Verifye chak fòm (POST) gen bon jeton anvan l trete — anpeche
+    lòt sit voye rekèt kache nan non yon itilizatè konekte (CSRF)."""
+    if request.method == "POST":
+        token_form = request.form.get("csrf_token", "")
+        token_session = session.get("csrf_token", "")
+        if not token_form or token_form != token_session:
+            abort(400, description="Rekèt la pa valab (jeton sekirite pa bon). Retounen epi eseye ankò.")
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "mache_yogann.db")
 

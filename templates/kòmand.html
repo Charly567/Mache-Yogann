@@ -29,6 +29,7 @@
             <span class="card-badge badge-new" style="position:static;">Konfime</span>
           {% else %}
             <form method="POST" action="{{ url_for('konfime_kòmand', order_id=o['id']) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button type="submit" class="btn btn-primary btn-sm">Konfime peman resevwa</button>
             </form>
           {% endif %}

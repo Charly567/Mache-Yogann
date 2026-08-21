@@ -15,6 +15,7 @@
       <p class="field-hint">(Pou kounye a, lyen an parèt dirèkteman isit la paske sistèm imèl la poko konekte. Pita, l ap voye otomatikman sou imèl ou.)</p>
     {% else %}
       <form method="POST" action="{{ url_for('modpas_bliye') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <label>Imèl
           <input type="email" name="email" required placeholder="ou@egzanp.com">
         </label>

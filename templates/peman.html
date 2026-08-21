@@ -28,6 +28,7 @@
     {% endif %}
 
     <form method="POST" action="{{ url_for('konfime_peman', order_id=order['id']) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <label>Kòd referans/konfimasyon tranzaksyon an
         <input type="text" name="transaction_ref" required placeholder="Ex: TX123456">
       </label>

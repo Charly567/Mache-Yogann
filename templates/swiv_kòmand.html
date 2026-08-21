@@ -10,6 +10,7 @@
 <section class="form-section">
   <div class="form-card">
     <form method="POST" action="{{ url_for('swiv_kòmand') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <label>Nimewo telefòn ou
         <input type="tel" name="phone" required placeholder="+509 3xxx xxxx">
       </label>

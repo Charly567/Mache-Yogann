@@ -6,6 +6,7 @@
   <div class="form-card auth-card">
     <h2>Chwazi yon nouvo modpas</h2>
     <form method="POST" action="{{ url_for('modpas_reset', token=token) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <label>Nouvo modpas
         <input type="password" name="password" required minlength="6" placeholder="Omwen 6 karaktè">
       </label>

@@ -11,6 +11,7 @@
   <div class="form-card">
     <h2>Poste yon nouvo pwodwi</h2>
     <form method="POST" action="{{ url_for('poste_pwodwi') }}" enctype="multipart/form-data">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <label>Non pwodwi a
         <input type="text" name="title" required placeholder="Ex: Panye Mango">
       </label>
@@ -90,6 +91,7 @@
           <div class="card-actions">
             <a href="{{ url_for('modifye_pwodwi', product_id=p['id']) }}" class="btn btn-outline btn-sm">Modifye</a>
             <form method="POST" action="{{ url_for('siprime_pwodwi', product_id=p['id']) }}" onsubmit="return confirm('Ou sèten ou vle siprime pwodwi sa a?');">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button type="submit" class="btn btn-outline btn-sm btn-danger">Siprime</button>
             </form>
           </div>

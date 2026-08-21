@@ -12,6 +12,7 @@
   <div class="form-card">
     <h2>Kreye kont vandè</h2>
     <form id="vendor-form" method="POST" action="{{ url_for('vandè') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <label>Non konplè
         <input type="text" name="fullname" required placeholder="Ex: Jak Pierre">
       </label>
