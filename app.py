@@ -19,9 +19,11 @@ from werkzeug.utils import secure_filename
 import sqlite3
 import os
 import uuid
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "chanje-kle-sa-a-pou-pwodiksyon")
+app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # 5 MB max pou telechajman
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "mache_yogann.db")
 
@@ -95,6 +97,15 @@ def init_db():
             status TEXT DEFAULT 'an_tann',
             created_at TEXT DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY(product_id) REFERENCES products(id),
+            FOREIGN KEY(vendor_id) REFERENCES vendors(id)
+        );
+
+        CREATE TABLE IF NOT EXISTS reset_tokens (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            vendor_id INTEGER NOT NULL,
+            token TEXT UNIQUE NOT NULL,
+            expires_at TEXT NOT NULL,
+            used INTEGER DEFAULT 0,
             FOREIGN KEY(vendor_id) REFERENCES vendors(id)
         );
     """)
@@ -329,6 +340,91 @@ def logout():
 
 
 # ---------------------------------------------------------
+# Swiv kòmand (pou klyan, san yo pa bezwen kont)
+# ---------------------------------------------------------
+@app.route("/swiv-kòmand", methods=["GET", "POST"])
+def swiv_kòmand():
+    orders = None
+    if request.method == "POST":
+        phone = request.form.get("phone", "").strip()
+        conn = get_db()
+        orders = conn.execute(
+            "SELECT orders.*, products.title AS product_title FROM orders "
+            "JOIN products ON orders.product_id = products.id "
+            "WHERE orders.buyer_phone = ? ORDER BY orders.created_at DESC",
+            (phone,),
+        ).fetchall()
+        conn.close()
+        if not orders:
+            flash("Nou pa jwenn okenn kòmand ak nimewo sa a.", "error")
+
+    return render_template("swiv_kòmand.html", orders=orders)
+
+
+# ---------------------------------------------------------
+# Bliye modpas
+# ---------------------------------------------------------
+@app.route("/modpas-bliye", methods=["GET", "POST"])
+def modpas_bliye():
+    reset_link = None
+    if request.method == "POST":
+        email = request.form.get("email", "").strip().lower()
+        conn = get_db()
+        vendor = conn.execute("SELECT id FROM vendors WHERE email = ?", (email,)).fetchone()
+
+        if vendor:
+            token = uuid.uuid4().hex
+            expires_at = (datetime.utcnow() + timedelta(hours=1)).isoformat()
+            conn.execute(
+                "INSERT INTO reset_tokens (vendor_id, token, expires_at) VALUES (?, ?, ?)",
+                (vendor["id"], token, expires_at),
+            )
+            conn.commit()
+            reset_link = url_for("modpas_reset", token=token, _external=True)
+        else:
+            flash("Pa gen kont ak imèl sa a.", "error")
+
+        conn.close()
+
+    return render_template("modpas_bliye.html", reset_link=reset_link)
+
+
+@app.route("/modpas-reset/<token>", methods=["GET", "POST"])
+def modpas_reset(token):
+    conn = get_db()
+    reset = conn.execute(
+        "SELECT * FROM reset_tokens WHERE token = ? AND used = 0",
+        (token,),
+    ).fetchone()
+
+    if not reset or datetime.fromisoformat(reset["expires_at"]) < datetime.utcnow():
+        conn.close()
+        flash("Lyen sa a pa valab ankò. Mande yon nouvo.", "error")
+        return redirect(url_for("modpas_bliye"))
+
+    if request.method == "POST":
+        password = request.form.get("password", "")
+        if len(password) < 6:
+            flash("Modpas la dwe gen omwen 6 karaktè.", "error")
+            conn.close()
+            return redirect(url_for("modpas_reset", token=token))
+
+        conn.execute(
+            "UPDATE vendors SET password_hash = ? WHERE id = ?",
+            (generate_password_hash(password), reset["vendor_id"]),
+        )
+        conn.execute("UPDATE reset_tokens SET used = 1 WHERE id = ?", (reset["id"],))
+        conn.commit()
+        conn.close()
+
+        flash("Modpas ou chanje! Ou ka konekte kounye a.", "success")
+        return redirect(url_for("login"))
+
+    conn.close()
+    return render_template("modpas_reset.html", token=token)
+
+
+# ---------------------------------------------------------
 # Achte yon pwodwi (kòmand + peman manyèl)
 # ---------------------------------------------------------
 @app.route("/pwodwi/<int:product_id>/achte", methods=["GET", "POST"])
@@ -354,6 +450,11 @@ def achte_pwodwi(product_id):
 
         if not (buyer_name and buyer_phone):
             flash("Tanpri antre non ak nimewo telefòn ou.", "error")
+            conn.close()
+            return redirect(url_for("achte_pwodwi", product_id=product_id))
+
+        if quantity < 1 or quantity > product["quantity"]:
+            flash("Kantite w mande a pa disponib.", "error")
             conn.close()
             return redirect(url_for("achte_pwodwi", product_id=product_id))
 
@@ -430,11 +531,23 @@ def konfime_kòmand(order_id):
         return redirect(url_for("login"))
 
     conn = get_db()
-    conn.execute(
-        "UPDATE orders SET status = 'konfime' WHERE id = ? AND vendor_id = ?",
+    order = conn.execute(
+        "SELECT * FROM orders WHERE id = ? AND vendor_id = ?",
         (order_id, session["vendor_id"]),
-    )
-    conn.commit()
+    ).fetchone()
+
+    if order and order["status"] != "konfime":
+        conn.execute(
+            "UPDATE orders SET status = 'konfime' WHERE id = ?",
+            (order_id,),
+        )
+        # Diminye kantite ki rete a — jamè desann pi ba pase 0.
+        conn.execute(
+            "UPDATE products SET quantity = MAX(0, quantity - ?) WHERE id = ?",
+            (order["quantity"], order["product_id"]),
+        )
+        conn.commit()
+
     conn.close()
 
     flash("Kòmand lan konfime!", "success")

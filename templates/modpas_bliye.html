@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Bliye Modpas — Mache Yogann{% endblock %}
+
+{% block content %}
+<section class="auth-wrap">
+  <div class="form-card auth-card">
+    <h2>Bliye modpas ou?</h2>
+    <p class="form-note">Antre imèl kont ou a, n ap ba w yon lyen pou chanje modpas.</p>
+
+    {% if reset_link %}
+      <div class="flash flash-success" style="margin-bottom:16px;">
+        Kont jwenn! Klike lyen sa a pou chanje modpas ou:<br>
+        <a href="{{ reset_link }}" style="word-break:break-all;">{{ reset_link }}</a>
+      </div>
+      <p class="field-hint">(Pou kounye a, lyen an parèt dirèkteman isit la paske sistèm imèl la poko konekte. Pita, l ap voye otomatikman sou imèl ou.)</p>
+    {% else %}
+      <form method="POST" action="{{ url_for('modpas_bliye') }}">
+        <label>Imèl
+          <input type="email" name="email" required placeholder="ou@egzanp.com">
+        </label>
+        <button type="submit" class="btn btn-primary btn-block">Voye lyen an</button>
+      </form>
+    {% endif %}
+    <p class="form-note"><a href="{{ url_for('login') }}">Retounen sou koneksyon</a></p>
+  </div>
+</section>
+{% endblock %}

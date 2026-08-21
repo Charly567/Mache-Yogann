@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Swiv Kòmand Mwen — Mache Yogann{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <h1>Swiv kòmand mwen</h1>
+  <p>Antre nimewo telefòn ou te itilize lè w te achte a, pou w wè estati kòmand ou yo.</p>
+</section>
+
+<section class="form-section">
+  <div class="form-card">
+    <form method="POST" action="{{ url_for('swiv_kòmand') }}">
+      <label>Nimewo telefòn ou
+        <input type="tel" name="phone" required placeholder="+509 3xxx xxxx">
+      </label>
+      <button type="submit" class="btn btn-primary btn-block">Chèche kòmand mwen</button>
+    </form>
+  </div>
+</section>
+
+{% if orders %}
+<section class="market" style="padding-top:0;">
+  <div class="market-head">
+    <h2>Kòmand ou yo ({{ orders|length }})</h2>
+  </div>
+  {% for o in orders %}
+  <div class="form-card" style="max-width:none;margin-bottom:16px;">
+    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+      <div>
+        <h3 style="margin:0 0 6px;">{{ o['product_title'] }} × {{ o['quantity'] }}</h3>
+        <p class="field-hint" style="margin:0;">Mwayen: {{ o['payment_method'] }}
+          {% if o['transaction_ref'] %} — Referans: {{ o['transaction_ref'] }}{% endif %}
+        </p>
+      </div>
+      <div style="text-align:right;">
+        <span class="card-price" style="display:block;margin-bottom:8px;">{{ "%.0f"|format(o['total_price']) }} HTG</span>
+        {% if o['status'] == 'konfime' %}
+          <span class="card-badge badge-new" style="position:static;">Konfime</span>
+        {% else %}
+          <span class="card-badge badge-discount" style="position:static;">An tann</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</section>
+{% endif %}
+{% endblock %}

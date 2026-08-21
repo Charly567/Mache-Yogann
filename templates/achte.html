@@ -12,6 +12,9 @@
     <h2>{{ product['title'] }} — {{ "%.0f"|format(product['price']) }} HTG</h2>
     <p class="field-hint">Vandè: {{ product['vendor_business'] or product['vendor_name'] }}</p>
 
+    {% if product['quantity'] <= 0 %}
+      <p class="empty-state" style="padding:20px 0;">Pwodwi sa a vann tout kounye a. Tanpri tounen pita.</p>
+    {% else %}
     <form method="POST" action="{{ url_for('achte_pwodwi', product_id=product['id']) }}">
       <label>Non ou
         <input type="text" name="buyer_name" required placeholder="Ex: Marie Joseph">
@@ -33,6 +36,7 @@
       </label>
       <button type="submit" class="btn btn-primary btn-block">Kontinye pou peye</button>
     </form>
+    {% endif %}
   </div>
 </section>
 {% endblock %}

@@ -8,4 +8,13 @@ document.addEventListener("DOMContentLoaded", () => {
   flashes.forEach(f => {
     setTimeout(() => { f.style.transition = "opacity .4s"; f.style.opacity = "0"; }, 4000);
   });
+
+  // Meni mobil (bouton ☰)
+  const menuBtn = document.getElementById("mobile-menu-btn");
+  const navlinks = document.getElementById("navlinks");
+  if (menuBtn && navlinks) {
+    menuBtn.addEventListener("click", () => {
+      navlinks.classList.toggle("open");
+    });
+  }
 });

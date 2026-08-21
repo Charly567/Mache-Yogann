@@ -51,9 +51,11 @@
   {% else %}
     <div class="grid">
       {% for p in products %}
-      <article class="card" data-category="{{ p['category'] }}">
+      <article class="card" data-category="{{ p['category'] }}" data-title="{{ p['title']|lower }}">
         <div class="card-img">
-          {% if p['badge'] %}
+          {% if p['quantity'] <= 0 %}
+            <span class="card-badge badge-discount">Fini</span>
+          {% elif p['badge'] %}
             <span class="card-badge badge-{{ p['badge_class'] }}">{{ p['badge'] }}</span>
           {% elif p['free_shipping'] %}
             <span class="card-badge badge-new">Livrezon gratis</span>
@@ -81,7 +83,11 @@
               {% if p['original_price'] %}<span class="card-price-old">{{ "%.0f"|format(p['original_price']) }}</span>{% endif %}
               {{ "%.0f"|format(p['price']) }} HTG
             </span>
-            <a href="{{ url_for('achte_pwodwi', product_id=p['id']) }}" class="card-buy" aria-label="Achte">+</a>
+            {% if p['quantity'] <= 0 %}
+              <span class="card-soldout">Vann tout</span>
+            {% else %}
+              <a href="{{ url_for('achte_pwodwi', product_id=p['id']) }}" class="card-buy" aria-label="Achte">+</a>
+            {% endif %}
           </div>
         </div>
       </article>
@@ -103,15 +109,29 @@
 
 {% block extra_js %}
 <script>
+let activeCategory = 'Tout';
+
+function applyFilters(){
+  const query = (document.getElementById('search-input')?.value || '').trim().toLowerCase();
+  document.querySelectorAll('.card').forEach(card => {
+    const matchesCat = (activeCategory === 'Tout' || card.dataset.category === activeCategory);
+    const matchesSearch = (query === '' || card.dataset.title.includes(query));
+    card.style.display = (matchesCat && matchesSearch) ? '' : 'none';
+  });
+}
+
 document.querySelectorAll('.chip').forEach(chip => {
   chip.addEventListener('click', () => {
     document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
     chip.classList.add('active');
-    const cat = chip.dataset.cat;
-    document.querySelectorAll('.card').forEach(card => {
-      card.style.display = (cat === 'Tout' || card.dataset.category === cat) ? '' : 'none';
-    });
+    activeCategory = chip.dataset.cat;
+    applyFilters();
   });
 });
+
+const searchInput = document.getElementById('search-input');
+if(searchInput){
+  searchInput.addEventListener('input', applyFilters);
+}
 </script>
 {% endblock %}
