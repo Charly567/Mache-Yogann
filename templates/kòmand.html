@@ -24,7 +24,8 @@
           </p>
         </div>
         <div style="text-align:right;">
-          <span class="card-price" style="display:block;margin-bottom:8px;">{{ "%.0f"|format(o['total_price']) }} HTG</span>
+          <span class="card-price" style="display:block;margin-bottom:4px;">{{ "%.0f"|format(o['total_price']) }} HTG</span>
+          <p class="field-hint" style="margin:0 0 8px;">Komisyon: {{ "%.0f"|format(o['commission_amount']) }} HTG — Ou resevwa: <strong>{{ "%.0f"|format(o['vendor_payout']) }} HTG</strong></p>
           {% if o['status'] == 'konfime' %}
             <span class="card-badge badge-new" style="position:static;">Konfime</span>
           {% else %}

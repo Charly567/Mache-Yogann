@@ -53,6 +53,7 @@ DB_PATH = os.path.join(os.path.dirname(__file__), "mache_yogann.db")
 # epi ekip Mache Yogann konfime tranzaksyon an manyèlman.
 MONCASH_NUMBER = os.environ.get("MONCASH_NUMBER", "4770-3814")
 NATCASH_NUMBER = os.environ.get("NATCASH_NUMBER", "3510-0438")
+COMMISSION_RATE = 0.10  # Mache Yogann pran 10% sou chak vant konfime
 
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "static", "img", "pwodwi")
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
@@ -114,6 +115,8 @@ def init_db():
             buyer_address TEXT,
             quantity INTEGER DEFAULT 1,
             total_price REAL NOT NULL,
+            commission_amount REAL DEFAULT 0,
+            vendor_payout REAL DEFAULT 0,
             payment_method TEXT NOT NULL,
             transaction_ref TEXT,
             status TEXT DEFAULT 'an_tann',
@@ -242,8 +245,22 @@ def dashboard():
         "SELECT * FROM products WHERE vendor_id = ? ORDER BY created_at DESC",
         (session["vendor_id"],),
     ).fetchall()
+
+    summary = conn.execute(
+        """SELECT
+             COUNT(*) AS total_orders,
+             COALESCE(SUM(total_price), 0) AS total_sales,
+             COALESCE(SUM(commission_amount), 0) AS total_commission,
+             COALESCE(SUM(vendor_payout), 0) AS total_payout
+           FROM orders WHERE vendor_id = ? AND status = 'konfime'""",
+        (session["vendor_id"],),
+    ).fetchone()
+
     conn.close()
-    return render_template("dashboard.html", products=products)
+    return render_template(
+        "dashboard.html", products=products, summary=summary,
+        commission_rate=int(COMMISSION_RATE * 100),
+    )
 
 
 @app.route("/dashboard/poste", methods=["POST"])
@@ -481,13 +498,16 @@ def achte_pwodwi(product_id):
             return redirect(url_for("achte_pwodwi", product_id=product_id))
 
         total_price = product["price"] * quantity
+        commission_amount = round(total_price * COMMISSION_RATE, 2)
+        vendor_payout = round(total_price - commission_amount, 2)
 
         cur = conn.execute(
             """INSERT INTO orders
-               (product_id, vendor_id, buyer_name, buyer_phone, buyer_address, quantity, total_price, payment_method)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+               (product_id, vendor_id, buyer_name, buyer_phone, buyer_address, quantity,
+                total_price, commission_amount, vendor_payout, payment_method)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (product_id, product["vendor_id"], buyer_name, buyer_phone, buyer_address,
-             quantity, total_price, payment_method),
+             quantity, total_price, commission_amount, vendor_payout, payment_method),
         )
         conn.commit()
         order_id = cur.lastrowid

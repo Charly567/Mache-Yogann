@@ -7,6 +7,27 @@
   <p>Poste pwodwi ou yo isit la, epi yo ap parèt otomatikman sou paj prensipal la.</p>
 </section>
 
+<section class="market" style="padding-top:0;">
+  <div class="summary-grid">
+    <div class="summary-card">
+      <span class="summary-label">Total vant konfime</span>
+      <span class="summary-value">{{ "%.0f"|format(summary['total_sales']) }} HTG</span>
+    </div>
+    <div class="summary-card">
+      <span class="summary-label">Komisyon Mache Yogann ({{ commission_rate }}%)</span>
+      <span class="summary-value summary-commission">{{ "%.0f"|format(summary['total_commission']) }} HTG</span>
+    </div>
+    <div class="summary-card">
+      <span class="summary-label">Ou resevwa (apre komisyon)</span>
+      <span class="summary-value summary-payout">{{ "%.0f"|format(summary['total_payout']) }} HTG</span>
+    </div>
+    <div class="summary-card">
+      <span class="summary-label">Kòmand konfime</span>
+      <span class="summary-value">{{ summary['total_orders'] }}</span>
+    </div>
+  </div>
+</section>
+
 <section class="form-section">
   <div class="form-card">
     <h2>Poste yon nouvo pwodwi</h2>
