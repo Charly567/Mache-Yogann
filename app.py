@@ -13,7 +13,7 @@ Pou lanse l lokalman:
 Epi ale sou http://127.0.0.1:5000
 """
 
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash, abort
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash, abort, send_file
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 import sqlite3
@@ -59,6 +59,9 @@ UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "static", "img", "pwodwi
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+CONTRACTS_FOLDER = os.path.join(os.path.dirname(__file__), "kontra")
+os.makedirs(CONTRACTS_FOLDER, exist_ok=True)
+
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -71,6 +74,79 @@ def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
+
+
+def generate_contract_pdf(vendor_id, fullname, business, phone, email, location, created_at):
+    """Jenere yon dokiman PDF ak kondisyon sèvis yo pou yon nouvo vandè."""
+    from reportlab.lib.pagesizes import letter
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib import colors
+    from reportlab.lib.units import inch
+
+    path = os.path.join(CONTRACTS_FOLDER, f"kontra_vandè_{vendor_id}.pdf")
+    doc = SimpleDocTemplate(path, pagesize=letter, topMargin=0.7 * inch, bottomMargin=0.7 * inch)
+    styles = getSampleStyleSheet()
+
+    title_style = ParagraphStyle("TitleMY", parent=styles["Title"], textColor=colors.HexColor("#171412"))
+    heading_style = ParagraphStyle("HeadingMY", parent=styles["Heading2"], textColor=colors.HexColor("#F97316"), spaceBefore=14, spaceAfter=6)
+    body_style = ParagraphStyle("BodyMY", parent=styles["Normal"], fontSize=10.5, leading=15)
+
+    story = []
+    story.append(Paragraph("Mache Yogann", title_style))
+    story.append(Paragraph("Kontra ak Kondisyon Sèvis pou Vandè", styles["Heading3"]))
+    story.append(Spacer(1, 14))
+
+    info_data = [
+        ["Non konplè:", fullname],
+        ["Non biznis:", business or "—"],
+        ["Telefòn:", phone],
+        ["Imèl:", email],
+        ["Kote (Leyogàn):", location],
+        ["Dat enskripsyon:", created_at],
+    ]
+    info_table = Table(info_data, colWidths=[1.8 * inch, 4 * inch])
+    info_table.setStyle(TableStyle([
+        ("FONTSIZE", (0, 0), (-1, -1), 10),
+        ("FONTNAME", (0, 0), (0, -1), "Helvetica-Bold"),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+        ("TEXTCOLOR", (0, 0), (-1, -1), colors.HexColor("#171412")),
+    ]))
+    story.append(info_table)
+
+    story.append(Paragraph("1. Frè sèvis", heading_style))
+    story.append(Paragraph(
+        f"Mache Yogann pran yon komisyon fiks de <b>{int(COMMISSION_RATE * 100)}%</b> sou pri chak vant ki fèt "
+        "sou platfòm nan. Rès la (90%) rale bay vandè a.", body_style))
+
+    story.append(Paragraph("2. Peman", heading_style))
+    story.append(Paragraph(
+        "Klyan an peye dirèkteman sou kont MonCash oswa NatCash Mache Yogann. Apre ekip Mache Yogann konfime "
+        "peman an te vrèman rive, kòmand lan konfime epi montan vandè a (apre komisyon an retire) kalkile "
+        "otomatikman nan tablo bò kote vandè a.", body_style))
+
+    story.append(Paragraph("3. Livrezon", heading_style))
+    story.append(Paragraph(
+        "Yon ajan Mache Yogann vin resevwa machandiz la nan men vandè a apre yon vant konfime, epi al livre l "
+        "bay klyan an.", body_style))
+
+    story.append(Paragraph("4. Egzatitid pwodwi", heading_style))
+    story.append(Paragraph(
+        "Vandè a responsab pou foto ak deskripsyon chak pwodwi kòrèk. Yon pwodwi ki pa disponib ankò dwe "
+        "retire nan platfòm nan touswit pa vandè a.", body_style))
+
+    story.append(Paragraph("5. Kantite ak disponibilite", heading_style))
+    story.append(Paragraph(
+        "Vandè a responsab kenbe kantite disponib chak pwodwi ajou. Platfòm nan diminye kantite a otomatikman "
+        "chak fwa yon vant konfime.", body_style))
+
+    story.append(Spacer(1, 20))
+    story.append(Paragraph(
+        "Lè vandè a kreye yon kont sou Mache Yogann, sa vle di li li epi li aksepte kondisyon sa yo.",
+        ParagraphStyle("Footer", parent=body_style, fontSize=9, textColor=colors.HexColor("#6B6560"))))
+
+    doc.build(story)
+    return path
 
 
 def init_db():
@@ -204,9 +280,20 @@ def vandè():
             (fullname, business, phone, email, generate_password_hash(password), location),
         )
         conn.commit()
+
+        new_vendor = conn.execute(
+            "SELECT id, created_at FROM vendors WHERE email = ?", (email,)
+        ).fetchone()
         conn.close()
 
-        flash("Kont vandè a kreye avèk siksè! Ou ka konekte kounye a.", "success")
+        try:
+            generate_contract_pdf(
+                new_vendor["id"], fullname, business, phone, email, location, new_vendor["created_at"],
+            )
+        except Exception:
+            pass  # Si jenerasyon PDF la echwe, pa bloke enskripsyon an — vandè a ka toujou konekte.
+
+        flash("Kont vandè a kreye avèk siksè! Ou ka konekte kounye a. Yon kopi kontra w disponib nan kont ou.", "success")
         return redirect(url_for("login"))
 
     return render_template("vande.html")
@@ -378,6 +465,29 @@ def logout():
     return redirect(url_for("home"))
 
 
+@app.route("/dashboard/kontra")
+def telechaje_kontra():
+    if "vendor_id" not in session:
+        return redirect(url_for("login"))
+
+    path = os.path.join(CONTRACTS_FOLDER, f"kontra_vandè_{session['vendor_id']}.pdf")
+    if not os.path.exists(path):
+        conn = get_db()
+        vendor = conn.execute("SELECT * FROM vendors WHERE id = ?", (session["vendor_id"],)).fetchone()
+        conn.close()
+        if vendor:
+            generate_contract_pdf(
+                vendor["id"], vendor["fullname"], vendor["business"], vendor["phone"],
+                vendor["email"], vendor["location"], vendor["created_at"],
+            )
+
+    if not os.path.exists(path):
+        flash("Nou pa jwenn kontra ou. Eseye ankò talè.", "error")
+        return redirect(url_for("dashboard"))
+
+    return send_file(path, as_attachment=True, download_name="kontra_mache_yogann.pdf")
+
+
 # ---------------------------------------------------------
 # Swiv kòmand (pou klyan, san yo pa bezwen kont)
 # ---------------------------------------------------------
@@ -398,7 +508,7 @@ def swiv_kòmand():
             flash("Nou pa jwenn okenn kòmand ak nimewo sa a.", "error")
 
     return render_template("swiv_kòmand.html", orders=orders)
-
+ 
 
 # ---------------------------------------------------------
 # Bliye modpas
