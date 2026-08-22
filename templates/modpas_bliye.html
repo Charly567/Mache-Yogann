@@ -7,12 +7,16 @@
     <h2>Bliye modpas ou?</h2>
     <p class="form-note">Antre imèl kont ou a, n ap ba w yon lyen pou chanje modpas.</p>
 
-    {% if reset_link %}
+    {% if email_sent %}
+      <div class="flash flash-success" style="margin-bottom:16px;">
+        Nou voye yon imèl sou bwat ou a ak yon lyen pou chanje modpas ou. Li ka pran kèk minit rive — tcheke Spam si w pa wè l.
+      </div>
+    {% elif reset_link %}
       <div class="flash flash-success" style="margin-bottom:16px;">
         Kont jwenn! Klike lyen sa a pou chanje modpas ou:<br>
         <a href="{{ reset_link }}" style="word-break:break-all;">{{ reset_link }}</a>
       </div>
-      <p class="field-hint">(Pou kounye a, lyen an parèt dirèkteman isit la paske sistèm imèl la poko konekte. Pita, l ap voye otomatikman sou imèl ou.)</p>
+      <p class="field-hint">(Sistèm imèl la pa reyisi voye kounye a, kidonk lyen an parèt dirèkteman isit la.)</p>
     {% else %}
       <form method="POST" action="{{ url_for('modpas_bliye') }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

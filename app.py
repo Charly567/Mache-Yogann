@@ -20,6 +20,8 @@ import sqlite3
 import os
 import uuid
 import secrets
+import smtplib
+from email.mime.text import MIMEText
 from datetime import datetime, timedelta
 
 app = Flask(__name__)
@@ -54,6 +56,32 @@ DB_PATH = os.path.join(os.path.dirname(__file__), "mache_yogann.db")
 MONCASH_NUMBER = os.environ.get("MONCASH_NUMBER", "4770-3814")
 NATCASH_NUMBER = os.environ.get("NATCASH_NUMBER", "3510-0438")
 COMMISSION_RATE = 0.10  # Mache Yogann pran 10% sou chak vant konfime
+
+GMAIL_ADDRESS = os.environ.get("GMAIL_ADDRESS", "")
+GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD", "")
+
+
+def send_email(to_email, subject, body):
+    """Voye yon imèl senp pa Gmail SMTP. Si konfigirasyon an pa la,
+    oswa si l echwe, l ap enprime yon nòt nan log la san l pa kraze sit la."""
+    if not (GMAIL_ADDRESS and GMAIL_APP_PASSWORD and to_email):
+        print(f"[imèl pa voye — konfigirasyon manke] {subject} -> {to_email}")
+        return False
+
+    try:
+        msg = MIMEText(body, "plain", "utf-8")
+        msg["Subject"] = subject
+        msg["From"] = f"Mache Yogann <{GMAIL_ADDRESS}>"
+        msg["To"] = to_email
+
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            server.starttls()
+            server.login(GMAIL_ADDRESS, GMAIL_APP_PASSWORD)
+            server.sendmail(GMAIL_ADDRESS, [to_email], msg.as_string())
+        return True
+    except Exception as e:
+        print(f"[erè voye imèl] {e}")
+        return False
 
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "static", "img", "pwodwi")
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
@@ -293,6 +321,18 @@ def vandè():
         except Exception:
             pass  # Si jenerasyon PDF la echwe, pa bloke enskripsyon an — vandè a ka toujou konekte.
 
+        send_email(
+            email,
+            "Byenveni sou Mache Yogann!",
+            f"Bonjou {fullname},\n\n"
+            "Kont vandè ou a kreye avèk siksè sou Mache Yogann.\n\n"
+            f"Mache Yogann pran yon komisyon fiks de {int(COMMISSION_RATE*100)}% sou chak vant.\n"
+            "Ou ka konekte kounye a epi kòmanse poste pwodwi ou yo sou:\n"
+            f"{url_for('login', _external=True)}\n\n"
+            "Yon kopi kontra ak kondisyon sèvis yo disponib nan dashboard ou.\n\n"
+            "Mèsi pou konfyans ou,\nEkip Mache Yogann",
+        )
+
         flash("Kont vandè a kreye avèk siksè! Ou ka konekte kounye a. Yon kopi kontra w disponib nan kont ou.", "success")
         return redirect(url_for("login"))
 
@@ -508,7 +548,7 @@ def swiv_kòmand():
             flash("Nou pa jwenn okenn kòmand ak nimewo sa a.", "error")
 
     return render_template("swiv_kòmand.html", orders=orders)
- 
+
 
 # ---------------------------------------------------------
 # Bliye modpas
@@ -516,10 +556,11 @@ def swiv_kòmand():
 @app.route("/modpas-bliye", methods=["GET", "POST"])
 def modpas_bliye():
     reset_link = None
+    email_sent = False
     if request.method == "POST":
         email = request.form.get("email", "").strip().lower()
         conn = get_db()
-        vendor = conn.execute("SELECT id FROM vendors WHERE email = ?", (email,)).fetchone()
+        vendor = conn.execute("SELECT id, fullname FROM vendors WHERE email = ?", (email,)).fetchone()
 
         if vendor:
             token = uuid.uuid4().hex
@@ -530,12 +571,22 @@ def modpas_bliye():
             )
             conn.commit()
             reset_link = url_for("modpas_reset", token=token, _external=True)
+
+            email_sent = send_email(
+                email,
+                "Chanje modpas ou — Mache Yogann",
+                f"Bonjou {vendor['fullname']},\n\n"
+                "Ou mande pou chanje modpas kont ou a. Klike lyen sa a (li valab pou 1 èdtan):\n\n"
+                f"{reset_link}\n\n"
+                "Si se pa ou ki mande sa, inyore imèl sa a.\n\n"
+                "Ekip Mache Yogann",
+            )
         else:
             flash("Pa gen kont ak imèl sa a.", "error")
 
         conn.close()
 
-    return render_template("modpas_bliye.html", reset_link=reset_link)
+    return render_template("modpas_bliye.html", reset_link=None if email_sent else reset_link, email_sent=email_sent)
 
 
 @app.route("/modpas-reset/<token>", methods=["GET", "POST"])
@@ -621,7 +672,26 @@ def achte_pwodwi(product_id):
         )
         conn.commit()
         order_id = cur.lastrowid
+
+        vendor = conn.execute("SELECT email, fullname FROM vendors WHERE id = ?", (product["vendor_id"],)).fetchone()
         conn.close()
+
+        if vendor:
+            send_email(
+                vendor["email"],
+                f"Nouvo kòmand — {product['title']}",
+                f"Bonjou {vendor['fullname']},\n\n"
+                f"Ou gen yon nouvo kòmand pou \"{product['title']}\" ({quantity} inite).\n\n"
+                f"Klyan: {buyer_name} — {buyer_phone}\n"
+                f"Total: {total_price:.0f} HTG\n"
+                f"Ou pral resevwa: {vendor_payout:.0f} HTG (apre komisyon {int(COMMISSION_RATE*100)}%)\n"
+                f"Mwayen peman: {payment_method}\n\n"
+                "Klyan an poko fin voye lajan an — ou ap resevwa yon lòt imèl (oswa ou ka verifye "
+                "sou dashboard ou) depi yo antre referans tranzaksyon an, epi konfime peman an ou menm.\n\n"
+                f"Ale sou dashboard ou: {url_for('dashboard_kòmand', _external=True)}\n\n"
+                "Ekip Mache Yogann",
+            )
+
         return redirect(url_for("konfime_peman", order_id=order_id))
 
     conn.close()
