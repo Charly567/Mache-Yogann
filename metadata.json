@@ -1,0 +1,6 @@
+{
+  "name": "Mache Yogann",
+  "description": "Marketplace haïtienne multi-vendeurs avec système d'achat, vente, paiement MonCash/NatCash/Crypto et livraison intégrée à Léogâne et en Haïti.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

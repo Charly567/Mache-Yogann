@@ -1,0 +1,148 @@
+@import "tailwindcss";
+
+/* =========================================================================
+   MACHÈ YOGANN - PREMIUM ANIMATION SYSTEM & EASING TOKENS
+   Standardized timing & cubic-bezier curves for professional responsiveness
+   ========================================================================= */
+
+:root {
+  --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-micro: 180ms;
+  --duration-interactive: 260ms;
+  --duration-panel: 380ms;
+  --duration-reveal: 550ms;
+}
+
+/* 3D Perspective & Depth Utilities */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.perspective-800 {
+  perspective: 800px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+/* Subtle 3D Card Hover Lift & Layered Shadows */
+.card-3d-hover {
+  transition: transform var(--duration-interactive) var(--ease-premium),
+              box-shadow var(--duration-interactive) var(--ease-premium),
+              border-color var(--duration-interactive) var(--ease-premium);
+  will-change: transform, box-shadow;
+}
+
+.card-3d-hover:hover {
+  transform: translateY(-5px) scale(1.01);
+  box-shadow: 0 16px 32px -8px rgba(15, 23, 42, 0.12),
+              0 8px 16px -4px rgba(220, 38, 38, 0.06);
+}
+
+.card-3d-hover:active {
+  transform: translateY(-2px) scale(0.99);
+}
+
+/* Button Micro-Interactions */
+.btn-interactive {
+  transition: transform var(--duration-micro) var(--ease-premium),
+              box-shadow var(--duration-micro) var(--ease-premium),
+              background-color var(--duration-micro) ease;
+  will-change: transform;
+}
+
+.btn-interactive:hover {
+  transform: translateY(-1.5px);
+}
+
+.btn-interactive:active {
+  transform: scale(0.97) translateY(0);
+}
+
+.btn-interactive:focus-visible {
+  outline: 2px solid #dc2626;
+  outline-offset: 2px;
+}
+
+/* Floating Animation for Badges and Decorative Elements */
+@keyframes subtle-float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.animate-subtle-float {
+  animation: subtle-float 4s ease-in-out infinite;
+}
+
+/* Subtle Badge Pulse */
+@keyframes badge-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.12);
+    opacity: 0.92;
+  }
+}
+
+.animate-badge-pulse {
+  animation: badge-pulse 2s ease-in-out infinite;
+}
+
+/* Subtle Shake for Error States */
+@keyframes subtle-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-2px); }
+  80% { transform: translateX(2px); }
+}
+
+.animate-subtle-shake {
+  animation: subtle-shake 320ms var(--ease-premium);
+}
+
+/* Brand Shimmer effect for loaders */
+@keyframes brand-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-brand-shimmer {
+  animation: brand-shimmer 1.8s infinite;
+}
+
+/* Accessibility: prefers-reduced-motion compliance */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .animate-subtle-float,
+  .animate-badge-pulse,
+  .animate-subtle-shake,
+  .animate-brand-shimmer {
+    animation: none !important;
+  }
+  
+  .card-3d-hover:hover {
+    transform: none !important;
+  }
+}
